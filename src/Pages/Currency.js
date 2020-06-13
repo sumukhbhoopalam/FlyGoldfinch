@@ -1,88 +1,116 @@
-import React, { useEffect, useState } from 'react';
-import './App.css';
-import CurrencyRow from './CurrencyRow'
-import { NavLink } from 'react-router-dom';
+import React from "react";
+import "./App.css";
+import { extendObservable } from "mobx";
+import { observer } from "mobx-react";
+import { NavLink } from "react-router-dom";
 
-const BASE_URL = 'https://api.exchangeratesapi.io/latest'
-
-function Currency() {
-  const [currencyOptions, setCurrencyOptions] = useState([])
-  const [fromCurrency, setFromCurrency] = useState()
-  const [toCurrency, setToCurrency] = useState()
-  const [exchangeRate, setExchangeRate] = useState()
-  const [amount, setAmount] = useState(1)
-  const [amountInFromCurrency, setAmountInFromCurrency] = useState(true)
-
-  let toAmount, fromAmount
-  if (amountInFromCurrency) {
-    fromAmount = amount
-    toAmount = amount * exchangeRate
-  } else {
-    toAmount = amount
-    fromAmount = amount / exchangeRate
+class Converter extends React.Component {
+  constructor() {
+    super();
+    this.currency_details = [
+      { currency: "XCD", name: "East Caribbean dollar", symbol: "$" },
+      { currency: "EUR", name: "European euro", symbol: "€" },
+      { currency: "GEL", name: "Georgian lari", symbol: "₾" },
+      { currency: "XCD", name: "East Caribbean dollar", symbol: "$" },
+      { currency: "HTG", name: "Haitian gourde", symbol: "G" },
+      { currency: "INR", name: "Indian rupee", symbol: "₹" },
+      { currency: "ILS", name: "Israeli new sheqel", symbol: "₪" },
+      { currency: "KZT", name: "Kazakhstani tenge", symbol: "лв" },
+      { currency: "KWD", name: "Kuwaiti dinar", symbol: "د.ك" },
+      { currency: "LSL", name: "Lesotho loti", symbol: "L" },
+      { currency: "INR", name: "Indian rupee", symbol: "₹" },
+      { currency: "USD", name: "U.S. Dollar", symbol: "$" },
+    ];
+    extendObservable(this, {
+      from: "USD",
+      to: "INR",
+      currency_value: "",
+    });
   }
 
-  useEffect(() => {
-    fetch(BASE_URL)
-      .then(response => response.json())
-      .then(data => {
-        const firstCurrency = Object.keys(data.rates)[0]
-        setCurrencyOptions([data.base, ...Object.keys(data.rates)])
-        setFromCurrency(data.base)
-        setToCurrency(firstCurrency)
-        setExchangeRate(data.rates[firstCurrency])
+  handleFromChange(e) {
+    this.from = e.target.value;
+  }
+
+  handleToChange(e) {
+    this.to = e.target.value;
+  }
+
+  handleCurrencyValueChange(e) {
+    this.currency_value = e.target.value;
+  }
+
+  handleSubmit(e) {
+    e.preventDefault();
+    if (this.currency_value == "") 
+		return;
+    fetch(`https://free.currconv.com/api/v7/convert?q=${this.from}_${this.to}&compact=ultra&apiKey=dd8e835c3d0a875afe5e`)
+      .then((response) => response.json())
+      .then((response) => {
+        let currency_val = response[Object.keys(response)[0]];
+        let final = this.currency_value * currency_val;
+        alert(`Converted Value : ${this.to} ${final}`);
+        this.currency_value = "";
       })
-  }, [])
-
-  useEffect(() => {
-    if (fromCurrency != null && toCurrency != null) {
-      fetch(`${BASE_URL}?base=${fromCurrency}&symbols=${toCurrency}`)
-        .then(response => response.json())
-        .then(data => setExchangeRate(data.rates[toCurrency]))
-    }
-  }, [fromCurrency, toCurrency])
-
-  function handleFromAmountChange(e) {
-    setAmount(e.target.value)
-    setAmountInFromCurrency(true)
   }
 
-  function handleToAmountChange(e) {
-    setAmount(e.target.value)
-    setAmountInFromCurrency(false)
-  }
+  render() {
+    return (
+      <div>
+        <form onSubmit={this.handleSubmit.bind(this)}>
+          <div>
+            <label>
+              <select value={this.from}
+                onChange={this.handleFromChange.bind(this)}>
+                {this.currency_details.map((currency) => (
+                  <option value={currency.currency}>{currency.currency}({currency.symbol})</option>
+                ))}
+              </select>
+			  From Currency
+            </label>
+          </div>
+		  
+		  <div>
+		   <label>
+            <input
+              type="number"
+              value={this.currency_value}
+              onChange={this.handleCurrencyValueChange.bind(this)}
+            />
+			Value
+			</label>
+          </div>
 
-  return (
-    <>
-      <h1>Currency Converter</h1>
-      <CurrencyRow
-        currencyOptions={currencyOptions}
-        selectedCurrency={fromCurrency}
-        onChangeCurrency={e => setFromCurrency(e.target.value)}
-        onChangeAmount={handleFromAmountChange}
-        amount={fromAmount}
-      />
-      <div className="equals">=</div>
-      <CurrencyRow
-        currencyOptions={currencyOptions}
-        selectedCurrency={toCurrency}
-        onChangeCurrency={e => setToCurrency(e.target.value)}
-        onChangeAmount={handleToAmountChange}
-        amount={toAmount}
-      />
-	  <div>
-	  <button>
-			<NavLink className={'bx--btn bx--btn--primary'} to={'/data'}>
-			Previous Page
-			</NavLink>
-		</button>
-		<button>
-			<NavLink className={'bx--btn bx--btn--primary'} to={'/'}>
-			Next Page
-			</NavLink>
-		</button>
-	  </div>
-    </>
-  );
+          <div>
+            <label>
+              <select
+                value={this.to}
+                onChange={this.handleToChange.bind(this)}>
+                {this.currency_details.map((currency) => (
+                  <option value={currency.currency}>{currency.currency}({currency.symbol})</option>
+                ))}
+              </select>
+			  To Currency
+            </label>
+          </div>
+          <div>
+            <input type="submit"/>
+          </div>
+		  <div>
+			<button>
+				<NavLink className={'bx--btn bx--btn--primary'} to={'/data'}>
+				Previous Page
+				</NavLink>
+			</button>
+			<button>
+				<NavLink className={'bx--btn bx--btn--primary'} to={'/'}>
+				Next Page
+				</NavLink>
+			</button>
+		</div>
+        </form>
+      </div>
+    );
+  }
 }
-export default Currency;
+export default observer(Converter);
