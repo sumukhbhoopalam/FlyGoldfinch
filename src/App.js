@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import {observable} from 'mobx';
 import Home from "./Pages/Home";
 import Time from "./Pages/Time";
 import API from "./Pages/API";

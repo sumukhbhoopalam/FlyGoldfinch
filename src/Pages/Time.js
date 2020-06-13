@@ -1,32 +1,27 @@
 import React, { Component } from 'react';
 import { NavLink } from 'react-router-dom';
+import { extendObservable } from "mobx";
+import { observer } from "mobx-react";
+
 class Time extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      time: new Date().toLocaleString()
-    };
+  constructor() {
+    super();
+    extendObservable(this, {time: "",});
   }
   componentDidMount() {
-    this.intervalID = setInterval(
-      () => this.tick(),
-      1000
+     setInterval(
+	 () =>{
+		let t=new Date();
+		this.time = t.getHours()+":"+t.getMinutes()+":"+t.getSeconds();
+	 },1000
     );
-  }
-  componentWillUnmount() {
-    clearInterval(this.intervalID);
-  }
-  tick() {
-    this.setState({
-      time: new Date().toLocaleString()
-    });
   }
   render() {
     return (
 	<div>
-      <p className="App-clock">
-        The time is {this.state.time}.
-      </p>
+      <center><p className="App-clock">
+        The time is {this.time}
+      </p></center>
 		<button>
 		<NavLink className={'bx--btn bx--btn--primary'} to={'/'}>
 		Previous Page
@@ -42,4 +37,4 @@ class Time extends React.Component {
   }
 }
 
-export default Time;
+export default observer(Time);

@@ -1,38 +1,22 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { NavLink } from 'react-router-dom';
+import {observer} from 'mobx-react';
+import store from './store.js';
 
-class Home extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      clicks: 0,
-      show: true
-    };
-  }
-
-  IncrementItem = () => {
-    this.setState({ clicks: this.state.clicks + 1 });
-  }
-  DecreaseItem = () => {
-    this.setState({ clicks: this.state.clicks - 1 });
-  }
-  ToggleClick = () => {
-    this.setState({ show: !this.state.show });
-  }
-
-  render() {
-    return (
-      <div>
-        <button onClick={this.IncrementItem}> + (Increment)</button>
-        <button onClick={this.DecreaseItem}> - (Decrement)</button>
-        { this.state.show ? <h2>{ this.state.clicks }</h2> : '' }
+const Home = () => (
+  <div>
+    <button onClick={() => store.increment()}> + (Increment)</button>
+   
+    <button onClick={() => store.decrement()}>- (Decrement)</button>
+	 <center>
+	 <h2>{store.counter}</h2>
 		<button>
 		<NavLink className={'bx--btn bx--btn--primary'} to={'/Time'}>
 		Next Page
 		</NavLink>
 		</button>
-      </div>
-    );
-  }
-}
-export default Home;
+	</center>
+	</div>
+);
+
+export default observer(Home);
